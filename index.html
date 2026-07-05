@@ -2,30 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mess Master Pro</title>
-    <link rel="manifest" href="manifest.json">
-    
+    <title>Mess Master</title>
     <style>
-        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 20px; }
-        h1 { text-align: center; color: #38bdf8; }
-        /* Baaki CSS aap yahan baad mein adjust kar sakte hain */
+        body { background: #0f172a; color: #fff; font-family: sans-serif; padding: 20px; text-align: center; }
+        .container { max-width: 400px; margin: auto; background: #1e293b; padding: 20px; border-radius: 15px; }
+        input { width: 90%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: none; }
+        button { width: 95%; padding: 10px; background: #38bdf8; border: none; border-radius: 5px; cursor: pointer; color: #000; font-weight: bold; }
+        #display { margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Mess Master Pro</h1>
-        <div id="app">
-            <p>Loading...</p>
-        </div>
-    </div>
+<div class="container">
+    <h1>Mess Master</h1>
+    <input type="text" id="entry" placeholder="Entry likhein...">
+    <button id="saveBtn">Save Entry</button>
+    <div id="display"></div>
+</div>
 
-    <script type="module">
-        console.log("Firebase connection pending...");
-        // Jab aap Firebase config ready rakhenge, hum yahan paste karenge
-    </script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    // --- YAHAN APNA CONFIG PASTE KAREIN ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "YOUR_DATABASE_URL",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+    // --------------------------------------
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const entriesRef = ref(db, 'entries');
+
+    document.getElementById("saveBtn").onclick = function() {
+        let val = document.getElementById("entry").value;
+        if(val) {
+            push(entriesRef, val);
+            document.getElementById("entry").value = "";
+        }
+    };
+
+    onValue(entriesRef, (snapshot) => {
+        const data = snapshot.val();
+        const display = document.getElementById("display");
+        display.innerHTML = "";
+        if (data) {
+            Object.values(data).forEach(item => {
+                display.innerHTML += `<p>• ${item}</p>`;
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
