@@ -5,121 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mess Master Pro</title>
     <link rel="manifest" href="manifest.json">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f1f5f9; --danger: #f43f5e; --success: #22c55e; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h1 { text-align: center; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        .summary-box { background: #0f172a; padding: 15px; border-radius: 12px; border-left: 5px solid var(--accent); margin-bottom: 15px; }
-        .settle-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 14px; }
-        
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; }
-        button { width: 100%; padding: 12px; border: none; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 10px; }
-        .btn-add { background-color: var(--accent); color: #0f172a; }
-        .btn-jpg { background-color: #6366f1; color: white; }
-        .btn-clear { background-color: transparent; border: 1px solid var(--danger); color: var(--danger); }
-
-        /* Excel-like Table */
-        .history-table { width: 100%; margin-top: 20px; font-size: 13px; }
-        .row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 5px; padding: 8px 0; border-bottom: 1px solid #334155; align-items: center; }
-        .row.header { font-weight: bold; color: var(--accent); border-bottom: 2px solid var(--accent); }
-        .delete-btn { color: var(--danger); cursor: pointer; font-size: 16px; text-align: right; }
+        body { background-color: #0f172a; color: #f1f5f9; font-family: 'Inter', sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 20px; }
+        h1 { text-align: center; color: #38bdf8; }
+        /* Baaki CSS aap yahan baad mein adjust kar sakte hain */
     </style>
 </head>
 <body>
 
-<div class="container" id="capture-area">
-    <h1>🥘 Mess Master</h1>
-    
-    <div class="summary-box">
-        <p><strong>Total Mess:</strong> AED <span id="total-expense">0.00</span></p>
-        <p><strong>Per Head:</strong> AED <span id="per-head">0.00</span></p>
-    </div>
-
-    <div id="settlement-list" style="margin-bottom: 20px;"></div>
-
-    <select id="partner-name"><option>Ali</option><option>Rizwan</option><option>Asad Ali</option></select>
-    <input type="text" id="item-name" placeholder="Item Name">
-    <input type="number" id="amount" placeholder="Amount (AED)">
-    <button class="btn-add" onclick="addExpense()">Add Record</button>
-    <button class="btn-jpg" onclick="downloadImage()">Download Summary (JPG)</button>
-
-    <div class="history-table">
-        <div class="row header">
-            <div>Date</div>
-            <div>Item</div>
-            <div>AED</div>
+    <div class="container">
+        <h1>Mess Master Pro</h1>
+        <div id="app">
+            <p>Loading...</p>
         </div>
-        <div id="expense-list"></div>
     </div>
-    
-    <button class="btn-clear" onclick="clearAll()" style="margin-top: 20px;">Clear All Data</button>
-</div>
 
-<script>
-    let expenses = JSON.parse(localStorage.getItem('mess_data')) || [];
-    const members = ["Ali", "Rizwan", "Asad Ali"];
+    <script type="module">
+        console.log("Firebase connection pending...");
+        // Jab aap Firebase config ready rakhenge, hum yahan paste karenge
+    </script>
 
-    function updateDashboard() {
-        let total = expenses.reduce((sum, item) => sum + item.amount, 0);
-        let perHead = total / members.length;
-        document.getElementById('total-expense').innerText = total.toFixed(2);
-        document.getElementById('per-head').innerText = perHead.toFixed(2);
-
-        let paidBy = { "Ali": 0, "Rizwan": 0, "Asad Ali": 0 };
-        expenses.forEach(e => paidBy[e.name] += e.amount);
-
-        let settleHTML = '<h3>Settlement</h3>';
-        members.forEach(m => {
-            let diff = paidBy[m] - perHead;
-            let msg = "";
-            if (diff > 0.1) msg = `<span style="color:var(--success)">${m} ny lyny hain: ${diff.toFixed(2)}</span>`;
-            else if (diff < -0.1) msg = `<span style="color:var(--danger)">${m} ny dyny hain: ${Math.abs(diff).toFixed(2)}</span>`;
-            else msg = `<span style="color:gray">Hisab barabar hai</span>`;
-            settleHTML += `<div class="settle-row"><strong>${m}</strong> ${msg}</div>`;
-        });
-        document.getElementById('settlement-list').innerHTML = settleHTML;
-
-        let listHTML = '';
-        expenses.slice().reverse().forEach((item, index) => {
-            let actualIndex = expenses.length - 1 - index;
-            listHTML += `<div class="row">
-                <div>${item.date}</div>
-                <div><strong>${item.name}</strong><br><small>${item.item}</small></div>
-                <div>${item.amount.toFixed(0)} <span class="delete-btn" onclick="deleteItem(${actualIndex})">×</span></div>
-            </div>`;
-        });
-        document.getElementById('expense-list').innerHTML = listHTML;
-        localStorage.setItem('mess_data', JSON.stringify(expenses));
-    }
-
-    function addExpense() {
-        const name = document.getElementById('partner-name').value;
-        const item = document.getElementById('item-name').value;
-        const amount = parseFloat(document.getElementById('amount').value);
-        const date = new Date().toLocaleDateString('en-GB'); // Automatic Date DD/MM/YYYY
-        
-        if(!item || !amount) return alert("Please fill fields!");
-        expenses.push({name, item, amount, date});
-        document.getElementById('item-name').value = '';
-        document.getElementById('amount').value = '';
-        updateDashboard();
-    }
-
-    function deleteItem(index) { if(confirm("Delete record?")) { expenses.splice(index, 1); updateDashboard(); } }
-    function clearAll() { if(confirm("Are you sure?")) { expenses = []; updateDashboard(); } }
-    
-    function downloadImage() {
-        html2canvas(document.querySelector("#capture-area")).then(canvas => {
-            let link = document.createElement('a');
-            link.download = 'Mess_Ledger.jpg';
-            link.href = canvas.toDataURL("image/jpeg");
-            link.click();
-        });
-    }
-    updateDashboard();
-</script>
 </body>
 </html>
